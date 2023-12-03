@@ -21,16 +21,41 @@ if (!isset($_SESSION["USERNAME"])) {
 </head>
 
 <body class="h-screen flex flex-col">
-    <div class="flex flex-row">
-        <h1 class="text-5xl font-semibold text-center mb-4 flex-grow">
-            Robot Wars Lobby
-        </h1>
-        <button hx-post="/user/do_logout.php">
+    <div class="flex flex-row mt-2">
+        <h1 class="text-5xl font-semibold text-center mb-4 flex-grow">Robot Wars Lobby</h1>
+
+        <button hx-post="/user/do_logout.php" hx-confirm="Are you sure?" class="text-base bg-blue-600 text-white rounded-xl px-3 m-3 hover:bg-blue-300 border border-cyan-500">
             Log Out
         </button>
     </div>
 
-    <hr class="w-full" />
+    <hr class="my-2" />
+
+    <div class="flex flex-col justify-center items-center">
+        <div>
+            <p class="text-base w-min pointer-events-none">Hello,</p>
+            <p class="text-3xl font-extrabold -mt-2 w-min"><?= $_SESSION["USERNAME"] ?></p>
+        </div>
+    </div>
+
+    <hr class="my-2" />
+
+    <div class="flex flex-row h-full">
+        <a href="#" class="group h-full w-full transition-all flex items-center justify-center hover:bg-slate-300">
+            <p class="text-xl transition-all group-hover:text-3xl">
+                PvE Singleplayer
+            </p>
+        </a>
+        <a href="#" class="group h-full w-full transition-all flex items-center justify-center hover:bg-slate-300">
+            <p class="text-xl transition-all group-hover:text-3xl">
+                PvE Co-op
+            </p>
+        </a>
+        <div class="h-full w-full flex flex-col items-center">
+            <h1 class="text-xl">PvP Lobbies</h1>
+            <hr class="w-full" />
+        </div>
+    </div>
 </body>
 
 </html>
