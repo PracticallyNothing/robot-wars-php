@@ -2,8 +2,8 @@
 session_start();
 
 if (!isset($_SESSION["USERNAME"])) {
-    header("Location: index.php");
-    return;
+  header("Location: index.php");
+  return;
 }
 ?>
 
@@ -34,7 +34,9 @@ if (!isset($_SESSION["USERNAME"])) {
     <div class="flex flex-col justify-center items-center">
         <div>
             <p class="text-base w-min pointer-events-none">Hello,</p>
-            <p class="text-3xl font-extrabold -mt-2 w-min"><?= $_SESSION["USERNAME"] ?></p>
+            <p class="text-3xl font-extrabold -mt-2 w-min">
+                <?= $_SESSION["USERNAME"] ?>
+            </p>
         </div>
     </div>
 
