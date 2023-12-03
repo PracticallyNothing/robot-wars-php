@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "prettier": "prettier . -w"
+    "prettier": "prettier . -w",
+    "tailwindcss-watch": "tailwindcss -i input.css -o style.css --watch"
   },
   "author": "",
   "license": "ISC",
