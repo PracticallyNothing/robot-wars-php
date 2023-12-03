@@ -34,8 +34,8 @@ $password_hash = $stmt->get_result()->fetch_column();
 if (!$password_hash || !password_verify($password, $password_hash))
     show_login_error("Incorrect username or password!");
 
-header("HX-Location: lobby.php");
-
 session_start();
 $_SESSION["USERNAME"] = $username;
 $_SESSION["RANK"] = 1;
+
+header("HX-Redirect: lobby.php");
