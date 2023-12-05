@@ -15,7 +15,12 @@ if (isset($_SESSION["USERNAME"])) {
   <title>Robot Wars - Welcome!</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.9/htmx.min.js" integrity="sha512-FSS62yxqCRMCtm1J+ddRwX8DuCRVt/WMpihCo06P+Je5AG4CV9yoLX53zHaOB5w/eZdG7d/QAyUEJTnHZHrWKg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/htmx/1.9.9/htmx.min.js"
+    integrity="sha512-FSS62yxqCRMCtm1J+ddRwX8DuCRVt/WMpihCo06P+Je5AG4CV9yoLX53zHaOB5w/eZdG7d/QAyUEJTnHZHrWKg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer">
+  </script>
 </head>
 
 <body class="h-screen flex flex-col justify-center">
@@ -31,7 +36,11 @@ if (isset($_SESSION["USERNAME"])) {
         <input type="text" id="login-username" required name="username" class="border-2 px-2 border-blue-500 rounded-xl" />
 
         <label for="login-password">Password:</label>
-        <input type="password" id="login-password" required name="password" class="border-2 px-2 border-blue-500 rounded-xl" />
+        <input type="password"
+               id="login-password"
+               required
+               name="password"
+               class="border-2 px-2 border-blue-500 rounded-xl" />
 
         <button type="submit" id="login-submit" required name="login-submit" class="bg-orange-500 col-span-2 mx-5 py-2 rounded-lg hover:bg-orange-300 [&.htmx-request]:border-orange-700 [&.htmx-request]:pointer-events-none">
           Log In
