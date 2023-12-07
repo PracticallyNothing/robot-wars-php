@@ -46,6 +46,11 @@ include_once "connection.php";
     ?>
 
     <body class="h-screen w-screen flex justify-center items-center overflow-hidden overflow-hidden">
+        <!-- <pre class="w-[40ch]">
+             Mouse Position: <span id="mouse-pos"></span>
+             Angle: <span id="angle"></span>
+             Min/Max Angle: <span id="min-max-angle"></span>
+             </pre> -->
         <div id="map" class="w-[95vmin] h-[95vmin] relative m-auto">
             <?= draw_line(15) ?>
             <?= draw_line(15 + 45 / 2) ?>
@@ -129,45 +134,64 @@ include_once "connection.php";
              angle = (Math.PI/2 + angle) + 1.5 * Math.PI
          }
 
+         // ctx.strokeStyle = "rgb(200, 200, 200)";
          // ctx.beginPath()
          // ctx.moveTo(arcX, arcY)
          // ctx.arc(arcX, arcY, canvas.height * (mouseVecLen / canvas.height), 0, angle)
          // ctx.closePath();
          // ctx.stroke();
 
-         // Default case: the angles of the lines are the last and first angles.
-         let minAngle = lineAngles[lineAngles.length - 1]
-         let maxAngle = lineAngles[0] + Math.PI * 2
+         let minAngle = null
+         let maxAngle = null
 
-         // Find the two angles that the mouse's angle fits between.
-         for(let i = 1; i < lineAngles.length; i++) {
-             if(lineAngles[i] > angle) {
-                 minAngle = lineAngles[i-1];
-                 maxAngle = lineAngles[i];
-                 break;
+         // If the mouse is between the first and the last lines,
+         // highlight that specific sector.
+         if(angle < lineAngles[0] || angle > lineAngles[lineAngles.length - 1]) {
+             minAngle = lineAngles[lineAngles.length - 1]
+             maxAngle = lineAngles[0] + Math.PI * 2
+         } else {
+             // Otherwise, find the two lines that the mouse's angle fits between.
+             for(let i = 1; i < lineAngles.length; i++) {
+                 if(lineAngles[i] > angle) {
+                     minAngle = lineAngles[i-1];
+                     maxAngle = lineAngles[i];
+                     break;
+                 }
              }
          }
 
-         let minRadius = radiuses[radiuses.length - 1]
-         let maxRadius = canvas.width / 2
+         const degToRad = (deg) => deg * (Math.PI / 180.0);
+         const radToDeg = (rad) => rad * (180.0 / Math.PI);
 
-         for(let i = 1; i < radiuses.length; i++) {
-             if(radiuses[i] > mouseVecLen) {
-                 minRadius = radiuses[i-1];
-                 maxRadius = radiuses[i];
-                 break;
+         // Useful debugging code - shows where the mouse is:
+         // document.getElementById("mouse-pos").innerText = `(${radialMouseX.toFixed(2)}, ${radialMouseY.toFixed(2)})`
+         // document.getElementById("angle").innerText = radToDeg(angle).toFixed(2)
+         // document.getElementById("min-max-angle").innerText = `${radToDeg(minAngle).toFixed(2)} / ${radToDeg(maxAngle).toFixed(2)}`
+
+         // Only draw a segment if the mouse is within the map.
+         if(mouseVecLen >= radiuses[0] && mouseVecLen <= canvas.width / 2) {
+             let minRadius = radiuses[radiuses.length - 1]
+             let maxRadius = canvas.width / 2
+
+             for(let i = 1; i < radiuses.length; i++) {
+                 if(radiuses[i] > mouseVecLen) {
+                     minRadius = radiuses[i-1];
+                     maxRadius = radiuses[i];
+                     break;
+                 }
              }
-         }
 
-         ctx.lineWidth = 5;
-         ctx.strokeStyle = "rgb(0, 100, 200)";
-         ctx.fillStyle = "rgb(0, 100, 200)";
-         ctx.moveTo(arcX, arcY)
-         ctx.beginPath()
-         ctx.arc(arcX, arcY, minRadius, minAngle, maxAngle)
-         ctx.arc(arcX, arcY, maxRadius, maxAngle, minAngle, true)
-         ctx.closePath();
-         ctx.fill();
+             ctx.lineWidth = 5;
+             // ctx.strokeStyle = "rgb(200, 200, 200)";
+             ctx.fillStyle = "rgb(0, 100, 200)";
+             ctx.moveTo(arcX, arcY)
+             ctx.beginPath()
+             ctx.arc(arcX, arcY, minRadius, minAngle, maxAngle)
+             ctx.arc(arcX, arcY, maxRadius, maxAngle, minAngle, true)
+             ctx.closePath();
+             // ctx.stroke();
+             ctx.fill();
+         }
 
          window.requestAnimationFrame(draw);
      }
