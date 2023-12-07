@@ -86,7 +86,7 @@ include_once "connection.php";
      let lineAngles = []
      document.querySelectorAll("hr[data-angle]").forEach((line) => {
          let angleDegrees = parseFloat(line.attributes["data-angle"].nodeValue);
-         lineAngles.push(angleDegrees * (Math.PI / 180) - Math.PI / 2);
+         lineAngles.push(angleDegrees * (Math.PI / 180));
      });
      lineAngles.sort((a, b) => a - b)
 
@@ -125,6 +125,9 @@ include_once "connection.php";
          let mouseVecNorm = [radialMouseX, radialMouseY].map((x) =>  x/mouseVecLen)
          let angle = Math.atan2(1, 0) - Math.atan2(mouseVecNorm[0], mouseVecNorm[1])
 
+         if(angle < 0) {
+             angle = (Math.PI/2 + angle) + 1.5 * Math.PI
+         }
 
          // ctx.beginPath()
          // ctx.moveTo(arcX, arcY)
