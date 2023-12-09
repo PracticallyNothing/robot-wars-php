@@ -104,12 +104,16 @@ include_once "connection.php";
 
      let mouseX = null;
      let mouseY = null;
+     let mouseDown = false;
 
      document.body.addEventListener("mousemove", (e) =>  {
          let rect = canvas.getBoundingClientRect();
          mouseX = e.clientX - rect.left;
          mouseY = e.clientY - rect.top;
      });
+
+     document.body.addEventListener("mousedown", (e) => { mouseDown = true; });
+     document.body.addEventListener("mouseup", (e) => { mouseDown = false; });
 
      function draw(timestamp) {
          canvas.width = canvas.parentNode.clientWidth;
@@ -183,7 +187,10 @@ include_once "connection.php";
 
              ctx.lineWidth = 5;
              // ctx.strokeStyle = "rgb(200, 200, 200)";
-             ctx.fillStyle = "rgb(0, 100, 200)";
+             if(mouseDown)
+                ctx.fillStyle = "rgb(150, 150, 255)";
+             else
+                ctx.fillStyle = "rgb(0, 100, 200)";
              ctx.moveTo(arcX, arcY)
              ctx.beginPath()
              ctx.arc(arcX, arcY, minRadius, minAngle, maxAngle)
