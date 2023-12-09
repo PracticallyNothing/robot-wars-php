@@ -45,12 +45,19 @@ include_once "connection.php";
     }
     ?>
 
-    <body class="h-screen w-screen flex justify-center items-center overflow-hidden overflow-hidden">
+    <body class="h-screen w-screen flex justify-center items-center overflow-hidden">
         <!-- <pre class="w-[40ch]">
              Mouse Position: <span id="mouse-pos"></span>
              Angle: <span id="angle"></span>
              Min/Max Angle: <span id="min-max-angle"></span>
              </pre> -->
+        <div id="unit-panel" class="pl-4 flex flex-col gap-5 overflow-scroll h-screen">
+            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
+            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
+            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
+            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
+            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
+        </div>
         <div id="map" class="w-[95vmin] h-[95vmin] relative m-auto">
             <?= draw_line(15) ?>
             <?= draw_line(15 + 45 / 2) ?>
