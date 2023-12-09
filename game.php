@@ -24,7 +24,7 @@ include_once "connection.php";
 
     <?php
     function draw_line(float $rotation) {
-      echo '<div style="transform: rotate(' .
+      return '<div style="transform: rotate(' .
         $rotation .
         'deg)"' .
         ' class="absolute inset-0 m-auto flex flex-row items-center justify-between">' .
@@ -39,7 +39,7 @@ include_once "connection.php";
     }
 
     function draw_circle(float $percent) {
-      echo "<div data-radius=\"$percent\" style=\"width: $percent%; height: $percent%\"" .
+      return "<div data-radius=\"$percent\" style=\"width: $percent%; height: $percent%\"" .
         " class=\"game-circle m-auto absolute z-10 inset-0 border border-green-300 rounded-full\">" .
         "</div>";
     }
