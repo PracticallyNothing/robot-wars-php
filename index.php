@@ -4,7 +4,7 @@
 <?php
 session_start();
 
-if (isset($_SESSION["USERNAME"])) {
+if (isset($_SESSION["username"])) {
   header("Location: lobby.php");
   return;
 }

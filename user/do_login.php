@@ -26,7 +26,7 @@ if (strlen($username) == 0) {
 
 include_once "../connection.php";
 
-$stmt = $conn->prepare("SELECT PASSWORD_HASH from USERS where USERNAME = ?");
+$stmt = $conn->prepare("select PasswordHash from Users where Username = ?");
 $result = $stmt->execute([$username]);
 
 if (!$result) {
@@ -40,7 +40,7 @@ if (!$password_hash || !password_verify($password, $password_hash)) {
 }
 
 session_start();
-$_SESSION["USERNAME"] = $username;
-$_SESSION["RANK"] = 1;
+$_SESSION["username"] = $username;
+$_SESSION["rank"] = 1;
 
 header("HX-Redirect: lobby.php");

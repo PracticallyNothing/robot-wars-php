@@ -10,7 +10,7 @@ function post_only() {
 function protected_endpoint() {
     session_start();
 
-    if(isset($_SESSION["USERNAME"]))
+    if(isset($_SESSION["username"]))
         return;
 
     session_unset();

@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["USERNAME"])) {
+if (!isset($_SESSION["username"])) {
   header("Location: index.php");
   return;
 }
@@ -35,7 +35,7 @@ if (!isset($_SESSION["USERNAME"])) {
         <div>
             <p class="text-base w-min pointer-events-none">Hello,</p>
             <p class="text-3xl font-extrabold -mt-2 w-min">
-                <?= $_SESSION["USERNAME"] ?>
+                <?= $_SESSION["Username"] ?>
             </p>
         </div>
     </div>

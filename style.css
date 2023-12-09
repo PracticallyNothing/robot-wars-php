@@ -617,6 +617,10 @@ video {
   height: 100vh;
 }
 
+.w-\[40ch\] {
+  width: 40ch;
+}
+
 .w-\[42\.5\%\] {
   width: 42.5%;
 }
@@ -636,10 +640,6 @@ video {
 
 .w-screen {
   width: 100vw;
-}
-
-.w-\[40ch\] {
-  width: 40ch;
 }
 
 .shrink {

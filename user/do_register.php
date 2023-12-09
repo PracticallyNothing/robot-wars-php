@@ -30,7 +30,7 @@ if (strlen($username) == 0) {
 include_once "../connection.php";
 
 $stmt = $conn->prepare(
-  "INSERT into USERS(USERNAME, PASSWORD_HASH, EMAIL, RANK) values (?, ?, ?, 1)",
+  "insert into Users(Username, PasswordHash, Email) values (?, ?, ?)",
 );
 
 try {
@@ -47,7 +47,7 @@ try {
 }
 
 session_start();
-$_SESSION["USERNAME"] = $username;
-$_SESSION["RANK"] = 1;
+$_SESSION["username"] = $username;
+$_SESSION["rank"] = 1;
 
 header("HX-Redirect: lobby.php");
