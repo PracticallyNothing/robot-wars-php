@@ -51,12 +51,31 @@ include_once "connection.php";
              Angle: <span id="angle"></span>
              Min/Max Angle: <span id="min-max-angle"></span>
              </pre> -->
-        <div id="unit-panel" class="pl-4 flex flex-col gap-5 overflow-scroll h-screen">
-            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
-            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
-            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
-            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
-            <div class="w-[240px] flex-grow h-[240px] border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-600"></div>
+        <div id="unit-panel" class="pl-4 flex flex-col gap-5">
+            <?php
+            $result = $conn->query(
+              "select Id, Name, Caption, Cost from UnitBlueprints",
+            );
+
+            if (!$result) {
+              echo "ERROR: Failed to download blueprints!";
+            }
+
+            while ($blueprint = $result->fetch_assoc()) {
+              $id = (int) $blueprint["Id"];
+              $name = (string) $blueprint["Name"];
+              $caption = (string) $blueprint["Caption"];
+              $cost = (float) $blueprint["Cost"];
+
+              echo "<button" .
+                " id=\"build-$id\"" .
+                " onclick=\"buildUnit('$name')\"" .
+                " class=\"w-24 h-24 border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-400\">" .
+                "  <p>$caption</p>" .
+                "  <pre>$cost</pre>" .
+                "</button>";
+            }
+            ?>
         </div>
         <div id="map" class="w-[95vmin] h-[95vmin] relative m-auto">
             <?= draw_line(15) ?>
@@ -92,6 +111,10 @@ include_once "connection.php";
     </body>
 
     <script>
+     function buildUnit(unitType) {
+         console.log(`Building ${unitType}!`);
+     }
+
      let canvas = document.querySelector("canvas");
      let ctx = canvas.getContext("2d");
 
@@ -195,9 +218,9 @@ include_once "connection.php";
              ctx.lineWidth = 5;
              // ctx.strokeStyle = "rgb(200, 200, 200)";
              if(mouseDown)
-                ctx.fillStyle = "rgb(150, 150, 255)";
+                ctx.fillStyle = "rgba(0, 100, 200, 0.8)";
              else
-                ctx.fillStyle = "rgb(0, 100, 200)";
+                ctx.fillStyle = "rgba(150, 150, 255, 0.5)";
              ctx.moveTo(arcX, arcY)
              ctx.beginPath()
              ctx.arc(arcX, arcY, minRadius, minAngle, maxAngle)
