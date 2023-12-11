@@ -26,20 +26,23 @@ if (strlen($username) == 0) {
 
 include_once "../connection.php";
 
-$stmt = $conn->prepare("select PasswordHash from Users where Username = ?");
+$stmt = $conn->prepare("select Id, PasswordHash from Users where Username = ?");
 $result = $stmt->execute([$username]);
 
 if (!$result) {
   show_login_error("Unknown error while logging in!");
 }
 
-$password_hash = $stmt->get_result()->fetch_column();
+$user_data = $stmt->get_result()->fetch_assoc();
+$id = $user_data['Id'];
+$password_hash = $user_data['PasswordHash'];
 
 if (!$password_hash || !password_verify($password, $password_hash)) {
   show_login_error("Incorrect username or password!");
 }
 
 session_start();
+$_SESSION["userid"] = $id;
 $_SESSION["username"] = $username;
 $_SESSION["rank"] = 1;
 

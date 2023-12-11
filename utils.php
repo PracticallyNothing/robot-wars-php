@@ -15,10 +15,33 @@ function protected_endpoint() {
 
     session_unset();
 
-    if(isset($_SERVER["HTTP-HX-Request"])) {
-        header("HX-Redirect: /index.php");
-    } else {
-        header("Location: /index.php");
-    }
+    if(isset($_SERVER["HTTP_HX_REQUEST"]))
+        header("HX-Redirect: /lobby.php");
+    elseif(isset($_SERVER["HTTP_JQUERY_REQUEST"]))
+        http_response_code(401);
+    else
+        header("Location: /lobby.php");
+
+    exit(-1);
+}
+
+// Only allow following code to complete if the user has started a game.
+function game_only_endpoint() {
+    // echo "<pre>" . print_r($_SERVER, 1) . "</pre>";
+    // http_response_code(403);
+    // exit(-1);
+
+    protected_endpoint();
+
+    if(isset($_SESSION["gameid"]))
+        return;
+
+    if(isset($_SERVER["HTTP-HX-Request"]))
+        header("HX-Redirect: /lobby.php");
+    elseif(isset($_SERVER["HTTP_JQUERY_REQUEST"]))
+        http_response_code(403);
+    else
+        header("Location: /lobby.php");
+
     exit(-1);
 }

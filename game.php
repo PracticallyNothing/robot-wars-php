@@ -1,6 +1,6 @@
 <?php
 include_once "utils.php";
-protected_endpoint();
+game_only_endpoint();
 
 include_once "connection.php";
 ?>
@@ -15,6 +15,12 @@ include_once "connection.php";
             integrity="sha512-FSS62yxqCRMCtm1J+ddRwX8DuCRVt/WMpihCo06P+Je5AG4CV9yoLX53zHaOB5w/eZdG7d/QAyUEJTnHZHrWKg=="
             crossorigin="anonymous"
             referrerpolicy="no-referrer">
+        </script>
+
+        <script
+            src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+            crossorigin="anonymous">
         </script>
 
         <title>
@@ -51,32 +57,83 @@ include_once "connection.php";
              Angle: <span id="angle"></span>
              Min/Max Angle: <span id="min-max-angle"></span>
              </pre> -->
-        <div id="unit-panel" class="pl-4 flex flex-col gap-5">
-            <?php
-            $result = $conn->query(
-              "select Id, Name, Caption, Cost from UnitBlueprints",
-            );
+        <div id="side-panel" class="w-96 h-full border-r border-teal-400">
+            <div id="side-panel-tabs" class="flex flex-row justify-evenly items-center">
+                <button class="current flex-grow px-2 py-2 [&.current]:bg-cyan-600 hover:bg-blue-900 active:bg-blue-800"
+                        onclick="showTab(event, 'unit-panel')">
+                    Build
+                </button>
 
-            if (!$result) {
-              echo "ERROR: Failed to download blueprints!";
-            }
+                <button
+                    id="side-panel-queue-button"
+                    class="px-2 flex-grow py-2 [&.current]:bg-cyan-600 hover:bg-blue-900 active:bg-blue-800"
+                    onclick="showTab(event, 'queue-panel')">
+                    Queue
+                </button>
 
-            while ($blueprint = $result->fetch_assoc()) {
-              $id = (int) $blueprint["Id"];
-              $name = (string) $blueprint["Name"];
-              $caption = (string) $blueprint["Caption"];
-              $cost = (float) $blueprint["Cost"];
+                <button class="px-2 flex-grow py-2 [&.current]:bg-cyan-600 hover:bg-blue-900 active:bg-blue-800"
+                        onclick="showTab(event, 'score-panel')">
+                    Score
+                </button>
+            </div>
+            <hr class="mb-2 border-teal-500"/>
+            <div id="unit-panel"
+                 class="current-tab h-full justify-center items-center flex flex-col gap-5 hidden [&.current-tab]:block">
+                <?php
+                $result = $conn->query("select * from UnitBlueprints");
 
-              echo "<button" .
-                " id=\"build-$id\"" .
-                " onclick=\"buildUnit('$name')\"" .
-                " class=\"w-24 h-24 border-4 border-double border-green-300 hover:bg-slate-200 active:bg-slate-400\">" .
-                "  <p>$caption</p>" .
-                "  <pre>$cost</pre>" .
-                "</button>";
-            }
-            ?>
+                if (!$result) {
+                  echo "ERROR: Failed to download blueprints!";
+                }
+
+                $blueprints = [];
+
+                while ($blueprint = $result->fetch_assoc()) {
+
+                  $blueprints[] = $blueprint;
+
+                  $id = (int) $blueprint["Id"];
+                  $name = (string) $blueprint["Name"];
+                  $caption = (string) $blueprint["Caption"];
+                  $cost = (float) $blueprint["Cost"];
+                  $secondsToBuild = (float) $blueprint["SecondsToBuild"];
+                  ?>
+                    <button id="build-<?= $id ?>"
+                            onclick="buildUnit(<?= $id ?>)"
+                            class="flex flex-row items-center w-full hover:bg-slate-200 active:bg-slate-400 px-2 py-2">
+                        <div class="w-20 h-20 flex justify-center items-center">
+                            <img class="m-auto" src="/<?= $name ?>-icon.svg" />
+                        </div>
+
+                        <div class="flex flex-col flex-grow justify-center ml-4">
+                            <p class="text-left"><?= $caption ?></p>
+                            <pre class="text-left italic text-sm">🗲 <?= $cost ?></pre>
+                        </div>
+
+                        <div class="h-full flex flex-col justify-center items-center">
+                            <p class="text-right">
+                                <?= number_format(
+                                  $secondsToBuild,
+                                  2,
+                                  ".",
+                                  "",
+                                ) ?> sec. </p>
+                        </div>
+                    </button>
+                <?php
+                }
+                ?>
+            </div>
+            <div id="queue-panel" class="w-full flex-col gap-2 hidden [&.current-tab]:flex">
+            </div>
+            <div id="score-panel" class="w-full flex-col hidden [&.current-tab]:flex">
+                <button
+                    class="border border-red-400 py-4 bg-red-200 font-bold"
+                    hx-post="/game/end-game.php"
+                    hx-confirm="Are you sure?">End game</button>
+            </div>
         </div>
+
         <div id="map" class="w-[95vmin] h-[95vmin] relative m-auto">
             <?= draw_line(15) ?>
             <?= draw_line(15 + 45 / 2) ?>
@@ -110,11 +167,114 @@ include_once "connection.php";
         </div>
     </body>
 
-    <script>
-     function buildUnit(unitType) {
-         console.log(`Building ${unitType}!`);
+    <script id="game-code">
+     const unitBlueprints = {
+         <?php foreach ($blueprints as $bp) {
+
+           $id = $bp["Id"];
+           $name = $bp["Name"];
+           $cost = $bp["Cost"];
+           $speed = $bp["Speed"];
+           $buildTime = $bp["SecondsToBuild"];
+           ?>
+         <?= $id ?>: {
+             name: "<?= $name ?>",
+             cost: <?= $cost ?>,
+             speed: <?= $speed ?>,
+             secondsToBuild: <?= $buildTime ?>,
+         },
+         <?php
+         } ?>
      }
 
+     let buildQueue = [];
+     let buildTimeout = null;
+
+     let queueButton = document.getElementById("side-panel-queue-button")
+     let queuePanel = document.getElementById("queue-panel")
+
+     function showTab(event, tab) {
+         if(event.target.classList.contains("current"))
+             return;
+
+         document.querySelector(".current").classList.remove("current")
+         event.target.classList.add("current")
+
+         document.querySelector(".current-tab").classList.remove("current-tab")
+         document.getElementById(tab).classList.add("current-tab")
+     }
+
+     // NOTE(Mario):
+     //   Това е просто симулация от страната на клиента - сървъра използва своя логика,
+     //   за да разбере кога е готова единица.
+     function finishBuildingUnit() {
+         console.log(`Finished building ${buildQueue[0].unit.name}!`)
+         buildQueue.splice(0, 1);
+         if(buildQueue.length > 0) {
+             buildQueue[0].started = new Date();
+             buildTimeout = setTimeout(
+                 finishBuildingUnit,
+                 1000 * buildQueue[0].unit.secondsToBuild);
+             queueButton.innerText = `Queue (${buildQueue.length})`
+         } else {
+             buildTimeout = null;
+             queueButton.innerText = "Queue"
+         }
+
+         queuePanel.removeChild(queuePanel.children[0])
+     }
+
+     function updateBuildProgress() {
+         if(buildQueue.length == 0) {
+             window.requestAnimationFrame(updateBuildProgress);
+             return;
+         }
+
+         let timeLeft = queuePanel.children[0].querySelector("#time-left")
+         let progressBar = queuePanel.children[0].querySelector("progress");
+         timeLeft.innerText = (buildQueue[0].unit.secondsToBuild - (new Date() - buildQueue[0].started) / 1000).toFixed(2);
+         progressBar.value = (new Date() - buildQueue[0].started) / 100;
+         window.requestAnimationFrame(updateBuildProgress);
+     }
+     window.requestAnimationFrame(updateBuildProgress);
+
+     function buildUnit(unitId) {
+         let unit = unitBlueprints[unitId];
+         console.log(`Building ${unit.name}! It will take ${unit.secondsToBuild} seconds!`);
+         buildQueue.push({ id: unitId, unit: unit, started: new Date() })
+
+         queuePanel.innerHTML += `<div class="flex flex-row gap-2 justify-evenly px-2">
+             <pre class="w-[14ch] text-left">${unit.name}</pre>
+             <progress value="0" max="${unit.secondsToBuild * 10}">${unit.secondsToBuild.toFixed(2)}</progress>
+             <pre id="time-left" class="w-[6ch] text-right"></pre>
+         </div>`
+         queueButton.innerText = `Queue (${buildQueue.length})`
+
+         let response = $.ajax({
+             method: "POST",
+             url: "/game/build_unit.php",
+             data: {blueprintId: unitId},
+             headers: { "JQuery-Request": "1" },
+             statusCode: {
+                 401: () => window.location.href = "/index.php",
+                 403: () => window.location.href = "/lobby.php"
+             }
+         });
+         console.log(response)
+
+         if(buildTimeout == null) {
+             buildTimeout = setTimeout(
+                 finishBuildingUnit,
+                 1000 * unit.secondsToBuild);
+         }
+     }
+
+     function sendUnitToSector(unitId, sector) {
+         console.log(`Sending unit ${unitId} to sector ${sector}!`)
+     }
+    </script>
+
+    <script id="rendering-code">
      let canvas = document.querySelector("canvas");
      let ctx = canvas.getContext("2d");
 
@@ -136,14 +296,16 @@ include_once "connection.php";
      let mouseY = null;
      let mouseDown = false;
 
-     document.body.addEventListener("mousemove", (e) =>  {
+     let map = document.getElementById("map")
+
+     map.addEventListener("mousemove", (e) =>  {
          let rect = canvas.getBoundingClientRect();
          mouseX = e.clientX - rect.left;
          mouseY = e.clientY - rect.top;
      });
 
-     document.body.addEventListener("mousedown", (e) => { mouseDown = true; });
-     document.body.addEventListener("mouseup", (e) => { mouseDown = false; });
+     map.addEventListener("mousedown", (e) => { mouseDown = true; });
+     map.addEventListener("mouseup", (e) => { console.log(e); mouseDown = false; });
 
      function draw(timestamp) {
          canvas.width = canvas.parentNode.clientWidth;
@@ -218,9 +380,9 @@ include_once "connection.php";
              ctx.lineWidth = 5;
              // ctx.strokeStyle = "rgb(200, 200, 200)";
              if(mouseDown)
-                ctx.fillStyle = "rgba(0, 100, 200, 0.8)";
+                 ctx.fillStyle = "rgba(0, 100, 200, 0.8)";
              else
-                ctx.fillStyle = "rgba(150, 150, 255, 0.5)";
+                 ctx.fillStyle = "rgba(150, 150, 255, 0.5)";
              ctx.moveTo(arcX, arcY)
              ctx.beginPath()
              ctx.arc(arcX, arcY, minRadius, minAngle, maxAngle)

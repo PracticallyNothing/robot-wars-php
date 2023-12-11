@@ -24,7 +24,9 @@ if (!isset($_SESSION["username"])) {
     <div class="flex flex-row mt-2">
         <h1 class="text-5xl font-semibold text-center mb-4 flex-grow">Robot Wars Lobby</h1>
 
-        <button hx-post="/user/do_logout.php" hx-confirm="Are you sure?" class="text-base bg-blue-600 text-white rounded-xl px-3 m-3 hover:bg-blue-300 border border-cyan-500">
+        <button hx-post="/user/do_logout.php"
+                hx-confirm="Are you sure?"
+                class="text-base bg-blue-600 text-white rounded-xl px-3 m-3 hover:bg-blue-300 border border-cyan-500">
             Log Out
         </button>
     </div>
@@ -43,8 +45,11 @@ if (!isset($_SESSION["username"])) {
     <hr class="my-2" />
 
     <div class="flex flex-row h-full">
-        <a href="#" class="group h-full w-full transition-all flex items-center justify-center hover:bg-slate-300">
-            <p class="text-xl transition-all group-hover:text-3xl">
+        <a hx-post="/game/start_pve.php"
+           hx-indicator="#start-pve-text"
+           class="group h-full w-full transition-all flex items-center justify-center hover:bg-slate-300">
+            <p id="start-pve-text"
+               class="text-xl transition-all group-hover:text-3xl [&.htmx-request]:animation-spin">
                 PvE Singleplayer
             </p>
         </a>
