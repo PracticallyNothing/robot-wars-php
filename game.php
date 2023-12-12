@@ -281,12 +281,12 @@ $game_info = $stmt->get_result()->fetch_assoc();
 
          queuePanel.innerHTML += `<div class="flex flex-row gap-2 justify-evenly px-2">
              <pre class="w-[14ch] text-left">${unit.name}</pre>
-             <progress value="0" max="${unit.secondsToBuild * 10}">${unit.secondsToBuild.toFixed(2)}</progress>
-             <pre id="time-left" class="w-[6ch] text-right"></pre>
+             <progress value="0" max="${unit.secondsToBuild * 10}"></progress>
+             <pre id="time-left" class="w-[6ch] text-right">${unit.secondsToBuild.toFixed(2)}</pre>
          </div>`
          queueButton.innerText = `Queue (${buildQueue.length})`
 
-         let response = $.ajax({
+         $.ajax({
              method: "POST",
              url: "/game/build_unit.php",
              data: {blueprintId: unitId},
@@ -296,7 +296,6 @@ $game_info = $stmt->get_result()->fetch_assoc();
                  403: () => window.location.href = "/lobby.php"
              }
          });
-         console.log(response)
 
          if(buildTimeout == null) {
              buildTimeout = setTimeout(
