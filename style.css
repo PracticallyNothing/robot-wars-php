@@ -674,6 +674,10 @@ video {
   width: 100vw;
 }
 
+.w-1\/2 {
+  width: 50%;
+}
+
 .shrink {
   flex-shrink: 1;
 }

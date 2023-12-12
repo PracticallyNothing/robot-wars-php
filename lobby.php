@@ -48,10 +48,12 @@ if (!isset($_SESSION["username"])) {
         <a hx-post="/game/start_pve.php"
            hx-indicator="#start-pve-text"
            class="group h-full w-full transition-all flex flex-col items-center justify-center hover:bg-slate-300">
+            <p class="text-sm italic">Start a game:</p>
             <p id="start-pve-text"
                class="text-xl transition-all group-hover:text-3xl [&.htmx-request]:animation-spin">
                 PvE Singleplayer
                 <?php if (isset($_SESSION["gameid"])) { ?>
+                    <hr class="w-1/2 border border-black my-2"/>
                     <p class="italic">You already have a game started!</p>
                 <?php } ?>
             </p>
