@@ -3,6 +3,9 @@ include_once "utils.php";
 game_only_endpoint();
 
 include_once "connection.php";
+$stmt = $conn->prepare("select * from Games where Id = ?");
+$stmt->execute([$_SESSION["gameid"]]);
+$game_info = $stmt->get_result()->fetch_assoc();
 ?>
 <!DOCTYPE html>
 <html>
@@ -78,7 +81,7 @@ include_once "connection.php";
             </div>
             <hr class="mb-2 border-teal-500"/>
             <div id="unit-panel"
-                 class="current-tab h-full justify-center items-center flex flex-col gap-5 hidden [&.current-tab]:block">
+                 class="current-tab h-full hidden [&.current-tab]:block">
                 <?php
                 $result = $conn->query("select * from UnitBlueprints");
 
@@ -106,7 +109,7 @@ include_once "connection.php";
                         </div>
 
                         <div class="flex flex-col flex-grow justify-center ml-4">
-                            <p class="text-left"><?= $caption ?></p>
+                            <p class="text-xl text-left"><?= $caption ?></p>
                             <pre class="text-left italic text-sm">🗲 <?= $cost ?></pre>
                         </div>
 
@@ -120,15 +123,48 @@ include_once "connection.php";
                                 ) ?> sec. </p>
                         </div>
                     </button>
-                <?php
+                    <?php
                 }
                 ?>
             </div>
             <div id="queue-panel" class="w-full flex-col gap-2 hidden [&.current-tab]:flex">
             </div>
-            <div id="score-panel" class="w-full flex-col hidden [&.current-tab]:flex">
+            <div id="score-panel" class="px-4 h-full w-full flex-col hidden [&.current-tab]:flex justify-center">
+                <div class="grid grid-cols-2 gap-y-4">
+                    <div>
+                        <p>You've lasted for:</p>
+                        <h2 id="score-lasted-for-time"
+                            class="text-2xl"
+                            data-dt-game-started="<?= $game_info[
+                              "DatetimeCreated"
+                            ] ?>">
+                            <?php
+                            $now = new DateTimeImmutable();
+                            $now = $now->add(new DateInterval("PT1H"));
+
+                            $start = new DateTimeImmutable(
+                              $game_info["DatetimeCreated"],
+                            );
+
+                            echo $now->diff($start)->format("%H:%i:%S");
+                            ?>
+                        </h2>
+                    </div>
+                    <div>
+                        <p>You've mined:</p>
+                        <h2 id="score-minerals-mined" class="text-2xl"> 123456 minerals</h2>
+                    </div>
+                    <div>
+                        <p>You've killed:</p>
+                        <h2 id="score-aliens-killed" class="text-2xl">280000 aliens</h2>
+                    </div>
+                    <div>
+                        <p>You've lost:</p>
+                        <h2 id="score-units-lost" class="text-2xl">120 units</h2>
+                    </div>
+                </div>
                 <button
-                    class="border border-red-400 py-4 bg-red-200 font-bold"
+                    class="border border-red-400 py-4 bg-red-200 font-bold my-2"
                     hx-post="/game/end-game.php"
                     hx-confirm="Are you sure you want to end the game?">End game</button>
             </div>
@@ -177,12 +213,12 @@ include_once "connection.php";
            $speed = $bp["Speed"];
            $buildTime = $bp["SecondsToBuild"];
            ?>
-         <?= $id ?>: {
-             name: "<?= $name ?>",
-             cost: <?= $cost ?>,
-             speed: <?= $speed ?>,
-             secondsToBuild: <?= $buildTime ?>,
-         },
+             <?= $id ?>: {
+                 name: "<?= $name ?>",
+                 cost: <?= $cost ?>,
+                 speed: <?= $speed ?>,
+                 secondsToBuild: <?= $buildTime ?>,
+             },
          <?php
          } ?>
      }
