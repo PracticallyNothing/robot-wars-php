@@ -37,7 +37,7 @@ if (!isset($_SESSION["username"])) {
         <div>
             <p class="text-base w-min pointer-events-none">Hello,</p>
             <p class="text-3xl font-extrabold -mt-2 w-min">
-                <?= $_SESSION["Username"] ?>
+                <?= $_SESSION["username"] ?>
             </p>
         </div>
     </div>
