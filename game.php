@@ -130,7 +130,7 @@ include_once "connection.php";
                 <button
                     class="border border-red-400 py-4 bg-red-200 font-bold"
                     hx-post="/game/end-game.php"
-                    hx-confirm="Are you sure?">End game</button>
+                    hx-confirm="Are you sure you want to end the game?">End game</button>
             </div>
         </div>
 
