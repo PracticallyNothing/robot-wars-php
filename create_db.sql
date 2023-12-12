@@ -16,6 +16,9 @@ create table Users (
   primary key (Id)
 );
 
+insert into Users(Id, Username, Email, PasswordHash, Rank) values
+(NULL, 'Mario Krastev', '119909@students.ue-varna.bg', '$2y$10$RgZLLf5L0gqmMxdXnJyzUeVzw6AxjvGyxvqxA9OKFFe88vtW4OyS6', 1);
+
 create table Images (
   Id integer AUTO_INCREMENT,
   Name varchar(256) unique not null,
@@ -50,6 +53,7 @@ create table Games(
   Id integer AUTO_INCREMENT,
   UserId integer not null,
   DatetimeCreated timestamp not null default current_timestamp,
+  DatetimeEnded timestamp,
 
   primary key (Id),
   constraint FK_Game_User

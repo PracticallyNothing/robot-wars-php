@@ -6,7 +6,8 @@ game_only_endpoint();
 $gameid = $_SESSION["gameid"];
 
 include_once "../connection.php";
-// TODO: End the actual game in the DB.
+$stmt = $conn->prepare("update Games set DatetimeEnded = current_timestamp where Id = ?");
+$stmt->execute([$gameid]);
 
 $_SESSION["gameid"] = null;
 
