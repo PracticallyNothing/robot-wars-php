@@ -31,50 +31,27 @@ $game_info = $stmt->get_result()->fetch_assoc();
         </title>
     </head>
 
-    <?php
-    function draw_line(float $rotation) {
-      return '<div style="transform: rotate(' .
-        $rotation .
-        'deg)"' .
-        ' class="absolute inset-0 m-auto flex flex-row items-center justify-between">' .
-        '  <hr data-angle="' .
-        $rotation +
-        180.0 .
-        '" class="w-[42.5%] border z-10 border-green-200"/>' .
-        '  <hr data-angle="' .
-        $rotation .
-        '" class="w-[42.5%] border z-10 border-green-200"/>' .
-        "</div>";
-    }
-
-    function draw_circle(float $percent) {
-      return "<div data-radius=\"$percent\" style=\"width: $percent%; height: $percent%\"" .
-        " class=\"game-circle m-auto absolute z-10 inset-0 border border-green-300 rounded-full\">" .
-        "</div>";
-    }
-    ?>
-
-    <body class="h-screen w-screen flex justify-center items-center overflow-hidden">
+    <body class="h-screen w-screen flex justify-center items-center overflow-hidden bg-gray-800 text-white">
         <!-- <pre class="w-[40ch]">
              Mouse Position: <span id="mouse-pos"></span>
              Angle: <span id="angle"></span>
              Min/Max Angle: <span id="min-max-angle"></span>
              </pre> -->
-        <div id="side-panel" class="w-96 h-full border-r border-teal-400">
+        <div id="side-panel" class="w-96 h-full border-r border-teal-600 bg-gray-900">
             <div id="side-panel-tabs" class="flex flex-row justify-evenly items-center">
-                <button class="current flex-grow px-2 py-2 [&.current]:bg-cyan-600 hover:bg-blue-900 active:bg-blue-800"
+                <button class="current flex-grow basis-full px-2 py-2 [&.current]:bg-emerald-600 hover:bg-blue-600 active:bg-blue-700"
                         onclick="showTab(event, 'unit-panel')">
                     Build
                 </button>
 
                 <button
                     id="side-panel-queue-button"
-                    class="px-2 flex-grow py-2 [&.current]:bg-cyan-600 hover:bg-blue-900 active:bg-blue-800"
+                    class="px-2 flex-grow basis-full py-2 [&.current]:bg-emerald-600 hover:bg-blue-600 active:bg-blue-700"
                     onclick="showTab(event, 'queue-panel')">
                     Queue
                 </button>
 
-                <button class="px-2 flex-grow py-2 [&.current]:bg-cyan-600 hover:bg-blue-900 active:bg-blue-800"
+                <button class="px-2 flex-grow basis-full py-2 [&.current]:bg-emerald-600 hover:bg-blue-600 active:bg-blue-700"
                         onclick="showTab(event, 'score-panel')">
                     Score
                 </button>
@@ -103,7 +80,7 @@ $game_info = $stmt->get_result()->fetch_assoc();
                   ?>
                     <button id="build-<?= $id ?>"
                             onclick="buildUnit(<?= $id ?>)"
-                            class="flex flex-row items-center w-full hover:bg-slate-200 active:bg-slate-400 px-2 py-2">
+                            class="flex flex-row items-center w-full hover:bg-slate-600 active:bg-slate-700 px-2 py-2">
                         <div class="w-20 h-20 flex justify-center items-center">
                             <img class="m-auto" src="/<?= $name ?>-icon.svg" />
                         </div>
@@ -123,7 +100,7 @@ $game_info = $stmt->get_result()->fetch_assoc();
                                 ) ?> sec. </p>
                         </div>
                     </button>
-                    <?php
+                <?php
                 }
                 ?>
             </div>
@@ -146,7 +123,7 @@ $game_info = $stmt->get_result()->fetch_assoc();
                               $game_info["DatetimeCreated"],
                             );
 
-                            echo $now->diff($start)->format("%H:%i:%S");
+                            echo $now->diff($start)->format("%H:%I:%S");
                             ?>
                         </h2>
                     </div>
@@ -164,11 +141,34 @@ $game_info = $stmt->get_result()->fetch_assoc();
                     </div>
                 </div>
                 <button
-                    class="border border-red-400 py-4 bg-red-200 font-bold my-2"
+                    class="border border-red-400 py-4 bg-red-800 hover:bg-red-700 active:bg-red-600 font-bold my-2"
                     hx-post="/game/end-game.php"
                     hx-confirm="Are you sure you want to end the game?">End game</button>
             </div>
         </div>
+
+        <?php
+        function draw_line(float $rotation) {
+          return '<div style="transform: rotate(' .
+            $rotation .
+            'deg)"' .
+            ' class="absolute inset-0 m-auto flex flex-row items-center justify-between">' .
+            '  <hr data-angle="' .
+            $rotation +
+            180.0 .
+            '" class="w-[42.5%] border-2 z-10 border-green-200"/>' .
+            '  <hr data-angle="' .
+            $rotation .
+            '" class="w-[42.5%] border-2 z-10 border-green-200"/>' .
+            "</div>";
+        }
+
+        function draw_circle(float $percent) {
+          return "<div data-radius=\"$percent\" style=\"width: $percent%; height: $percent%\"" .
+            " class=\"game-circle m-auto absolute z-10 inset-0 border-2 border-green-300 rounded-full\">" .
+            "</div>";
+        }
+        ?>
 
         <div id="map" class="w-[95vmin] h-[95vmin] relative m-auto">
             <?= draw_line(15) ?>
@@ -181,7 +181,7 @@ $game_info = $stmt->get_result()->fetch_assoc();
             <?= draw_line(150 + 45 / 2) ?>
 
             <div id="map-scanner"
-                 style="background: conic-gradient(#0000 300deg, #0f05 345deg, #0f05 358deg, #0000)"
+                 style="background: conic-gradient(#0000 300deg, #0f08 345deg, #0f08 358deg, #0000)"
                  class="w-full h-full
                      animate-spin-30s
                      absolute inset-0

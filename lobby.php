@@ -36,7 +36,7 @@ if (!isset($_SESSION["username"])) {
     <div class="flex flex-col justify-center items-center">
         <div>
             <p class="text-base w-min pointer-events-none">Hello,</p>
-            <p class="text-3xl font-extrabold -mt-2 w-min">
+            <p class="text-3xl font-extrabold -mt-2 w-min whitespace-nowrap">
                 <?= $_SESSION["username"] ?>
             </p>
         </div>
