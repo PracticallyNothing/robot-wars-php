@@ -174,10 +174,10 @@ function get_num_dead_units($conn, $gameid)
             '  <hr data-angle="' .
             $rotation +
             180.0 .
-            '" class="w-[42.5%] border-2 z-10 border-green-200"/>' .
+            '" class="w-[45%] border-2 z-10 border-green-200"/>' .
             '  <hr data-angle="' .
             $rotation .
-            '" class="w-[42.5%] border-2 z-10 border-green-200"/>' .
+            '" class="w-[45%] border-2 z-10 border-green-200"/>' .
             "</div>";
     }
 
@@ -190,14 +190,10 @@ function get_num_dead_units($conn, $gameid)
     ?>
 
     <div id="map" class="w-[95vmin] h-[95vmin] relative m-auto">
-        <?= draw_line(15) ?>
-        <?= draw_line(15 + 45 / 2) ?>
-        <?= draw_line(60) ?>
-        <?= draw_line(60 + 45 / 2) ?>
-        <?= draw_line(105) ?>
-        <?= draw_line(105 + 45 / 2) ?>
-        <?= draw_line(150) ?>
-        <?= draw_line(150 + 45 / 2) ?>
+        <?= draw_line(0) ?>
+        <?= draw_line(45) ?>
+        <?= draw_line(90) ?>
+        <?= draw_line(135) ?>
 
         <div id="map-scanner" style="background: conic-gradient(#0000 300deg, #0f08 345deg, #0f08 358deg, #0000)" class="w-full h-full
         pointer-events-none
@@ -206,16 +202,17 @@ function get_num_dead_units($conn, $gameid)
                      border-2 border-transparent rounded-full">
         </div>
 
-        <div class="w-full h-full m-auto absolute inset-0
+        <div class="w-full h-full m-auto absolute inset-0 pointer-events-none
                         border-4 border-green-300 rounded-full"></div>
-        <?= draw_circle(85) ?>
-        <?= draw_circle(75) ?>
-        <?= draw_circle(65) ?>
-        <?= draw_circle(55) ?>
-        <?= draw_circle(45) ?>
-        <?= draw_circle(35) ?>
-        <?= draw_circle(25) ?>
-        <?= draw_circle(15) ?>
+        <?= draw_circle(90) ?>
+        <?= draw_circle(80) ?>
+        <?= draw_circle(70) ?>
+        <?= draw_circle(60) ?>
+        <?= draw_circle(50) ?>
+        <?= draw_circle(40) ?>
+        <?= draw_circle(30) ?>
+        <?= draw_circle(20) ?>
+        <?= draw_circle(10) ?>
 
         <canvas class="w-full h-full z-20"></canvas>
     </div>
@@ -240,7 +237,6 @@ function get_num_dead_units($conn, $gameid)
 
     let unitBlueprints = {
         <?php foreach ($blueprints as $bp) {
-
             $id = (int) $bp["Id"];
             $name = $bp["Name"];
             $cost = $bp["Cost"];
@@ -259,6 +255,7 @@ function get_num_dead_units($conn, $gameid)
 
     let buildQueue = [
         <?php foreach ($units_in_queue as $unit) { ?> {
+                unitId: <?= (int)$unit["UnitId"] ?>,
                 blueprintId: <?= $unit["UnitBlueprintId"] ?>,
                 startTime: new Date("<?= $unit["DatetimeIssued"] ?>"),
                 endTime: new Date("<?= $unit["DatetimeEnd"] ?>")
@@ -308,6 +305,9 @@ function get_num_dead_units($conn, $gameid)
         document.getElementById(tab).classList.add("current-tab")
     }
 
+    let selectedUnitId = null
+    let selectedUnitImg = null
+
     function spawnUnit(unit) {
         if (livingUnits[unit.id] != null) return;
 
@@ -333,7 +333,18 @@ function get_num_dead_units($conn, $gameid)
         unitIcon.style.height = "7%";
         unitIcon.style.transform = "translate(-50%, -50%)";
         unitIcon.addEventListener("click", (event) => {
-            unitIcon.classList.toggle("selected-unit")
+            if (selectedUnitId != null) {
+                selectedUnitImg.classList.remove("selected-unit")
+            }
+
+            if (selectedUnitId == unit.id) {
+                selectedUnitId = null;
+                selectedUnitImg = null;
+            } else {
+                selectedUnitId = unit.id;
+                selectedUnitImg = unitIcon;
+                unitIcon.classList.add("selected-unit")
+            }
         })
 
         console.log(unitIcon);
@@ -368,7 +379,7 @@ function get_num_dead_units($conn, $gameid)
 
                 let bp = unitBlueprints[currentlyBuildingUnit.blueprintId]
                 spawnUnit({
-                    id: "unit-" + Math.random().toString(16).slice(2),
+                    id: currentlyBuildingUnit.unitId,
                     name: bp.name,
                     currPosition: {
                         x: 0,
@@ -410,14 +421,45 @@ function get_num_dead_units($conn, $gameid)
         }).responseJSON;
 
         buildQueue.push({
+            unitId: json.unitId,
             blueprintId: json.blueprintId,
             startTime: new Date(json.startTime),
             endTime: new Date(json.endTime),
         });
     }
 
+    let currSelectedPos = {
+        x: 0,
+        y: 0
+    }
+
+    
+
     function sendUnitToSector(unitId, sector) {
         console.log(`Sending unit ${unitId} to sector ${sector}!`)
+        let json = $.ajax({
+            async: false,
+            method: "POST",
+            url: "/game/move_unit.php",
+            data: {
+                unitId: unitId,
+                sector: sector,
+            },
+            headers: {
+                "JQuery-Request": "1"
+            },
+            statusCode: {
+                401: () => window.location.href = "/index.php",
+                403: () => window.location.href = "/lobby.php"
+            }
+        }).responseJSON;
+
+        let canvas = document.querySelector("canvas");
+        currSelectedPos = json;
+        console.log(currSelectedPos,
+            (currSelectedPos.x + 1) * canvas.width,
+            (1 - currSelectedPos.y) * canvas.height)
+
     }
 </script>
 
@@ -451,12 +493,56 @@ function get_num_dead_units($conn, $gameid)
         mouseY = e.clientY - rect.top;
     });
 
-    map.addEventListener("mousedown", (e) => {
-        mouseDown = true;
-    });
-    map.addEventListener("mouseup", (e) => {
-        console.log(e);
-        mouseDown = false;
+    function xyToSector(x, y) {
+        let arcX = canvas.width / 2
+        let arcY = canvas.height / 2
+        let radialX = x - arcX
+        let radialY = y - arcY
+
+        let upVec = [0, 1]
+        let vecLen = Math.sqrt(radialX * radialX + radialY * radialY)
+        let vecNorm = [radialX, radialY].map((x) => x / vecLen)
+        let angle = Math.atan2(1, 0) - Math.atan2(vecNorm[0], vecNorm[1])
+
+        if (angle < 0) {
+            angle = (Math.PI / 2 + angle) + 1.5 * Math.PI
+        }
+
+        let radiuses = circleRadiuses.map((x) => (x / 100) * (canvas.width / 2))
+        let sectorNumber = radiuses.length
+
+        if (vecLen >= radiuses[0] && vecLen <= canvas.width / 2) {
+            for (let i = 1; i < radiuses.length; i++) {
+                if (radiuses[i] > vecLen) {
+                    sectorNumber = i;
+                    break;
+                }
+            }
+        }
+
+        let sectorLetter;
+
+        if (angle < lineAngles[0] || angle > lineAngles[lineAngles.length - 1]) {
+            sectorLetter = String.fromCharCode("A".charCodeAt(0) + lineAngles.length - 1)
+        } else {
+            for (let i = 1; i < lineAngles.length; i++) {
+                if (lineAngles[i] > angle) {
+                    sectorLetter = String.fromCharCode("A".charCodeAt(0) + i - 1)
+                    break;
+                }
+            }
+        }
+
+        return `${sectorLetter}${sectorNumber}`
+    }
+
+    map.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        if (selectedUnitId == null) {
+            return;
+        }
+
+        sendUnitToSector(selectedUnitId, xyToSector(mouseX, mouseY))
     });
 
     function draw(timestamp) {
@@ -515,6 +601,16 @@ function get_num_dead_units($conn, $gameid)
         // document.getElementById("mouse-pos").innerText = `(${radialMouseX.toFixed(2)}, ${radialMouseY.toFixed(2)})`
         // document.getElementById("angle").innerText = radToDeg(angle).toFixed(2)
         // document.getElementById("min-max-angle").innerText = `${radToDeg(minAngle).toFixed(2)} / ${radToDeg(maxAngle).toFixed(2)}`
+
+        ctx.strokeStyle = "rgb(200, 200, 200)";
+        ctx.beginPath()
+        ctx.moveTo(arcX, arcY)
+        ctx.lineTo(
+            (currSelectedPos.x + 1) / 2 * canvas.width,
+            (currSelectedPos.y + 1) / 2 * canvas.height)
+        ctx.closePath();
+        ctx.stroke();
+
 
         // Only draw a segment if the mouse is within the map.
         if (mouseVecLen >= radiuses[0] && mouseVecLen <= canvas.width / 2) {

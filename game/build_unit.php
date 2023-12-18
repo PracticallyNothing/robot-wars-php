@@ -63,6 +63,7 @@ exec_sql(
 
 header("Content-Type: application/json");
 echo json_encode([
+    "unitId" => $unit_id,
     "blueprintId" =>  $blueprint_id,
     "startTime" =>  ($last_datetime_end ?? $now)->format(DT_FORMAT),
     "endTime" =>  $end_time->format(DT_FORMAT),
