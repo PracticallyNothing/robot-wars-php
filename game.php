@@ -218,6 +218,19 @@ function get_num_dead_units($conn, $gameid)
     let queueButton = document.getElementById("side-panel-queue-button")
     let queuePanel = document.getElementById("queue-panel")
 
+    let gameStart = new Date("<?= $game_info["DatetimeCreated"] ?>")
+    let gameScoreText = document.getElementById("score-lasted-for-time")
+    
+    setInterval(() => {
+        let diff = new Date(new Date() - gameStart);
+
+        let hours = diff.getUTCHours().toString().padStart(2, "0")
+        let minutes = diff.getUTCMinutes().toString().padStart(2, "0")
+        let seconds = diff.getUTCSeconds().toString().padStart(2, "0")
+
+        gameScoreText.innerText = `${hours}:${minutes}:${seconds}`
+    }, 1000)
+
     let unitBlueprints = {
         <?php foreach ($blueprints as $bp) {
             $id = $bp["Id"];
