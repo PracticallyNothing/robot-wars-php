@@ -14,7 +14,7 @@ $now_str = $now->format(DT_FORMAT);
 
 exec_sql(
     $conn,
-    "insert into Units(GameId, BlueprintId) values (?, ?)",
+    "insert into Units(GameId, BlueprintId, DatetimeDied) values (?, ?, NULL)",
     [$gameid, $blueprint_id]
 );
 

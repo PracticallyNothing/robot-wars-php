@@ -22,7 +22,13 @@ function get_living_units($conn, $gameid)
 {
     return exec_sql_all(
         $conn,
-        "select * from Units where DatetimeDied is NULL and GameId = ?",
+        "select *" .
+            " from   Units U" .
+            "   join UnitBlueprints UB on U.BlueprintId = UB.Id" .
+            "   join GameCommands GC on U.Id = GC.UnitId and CommandType = 'build_unit'" .
+            " where U.DatetimeDied is NULL" .
+            "   and U.GameId = ?" .
+            "   and GC.DatetimeEnd <= current_timestamp",
         [$gameid],
     );
 }
@@ -178,7 +184,7 @@ function get_num_dead_units($conn, $gameid)
     function draw_circle(float $percent)
     {
         return "<div data-radius=\"$percent\" style=\"width: $percent%; height: $percent%\"" .
-            " class=\"game-circle m-auto absolute z-10 inset-0 border-2 border-green-300 rounded-full\">" .
+            " class=\"game-circle m-auto absolute z-10 inset-0 border-2 border-green-300 rounded-full pointer-events-none\">" .
             "</div>";
     }
     ?>
@@ -194,6 +200,7 @@ function get_num_dead_units($conn, $gameid)
         <?= draw_line(150 + 45 / 2) ?>
 
         <div id="map-scanner" style="background: conic-gradient(#0000 300deg, #0f08 345deg, #0f08 358deg, #0000)" class="w-full h-full
+        pointer-events-none
                      animate-spin-30s
                      absolute inset-0
                      border-2 border-transparent rounded-full">
@@ -220,7 +227,7 @@ function get_num_dead_units($conn, $gameid)
 
     let gameStart = new Date("<?= $game_info["DatetimeCreated"] ?>")
     let gameScoreText = document.getElementById("score-lasted-for-time")
-    
+
     setInterval(() => {
         let diff = new Date(new Date() - gameStart);
 
@@ -233,7 +240,8 @@ function get_num_dead_units($conn, $gameid)
 
     let unitBlueprints = {
         <?php foreach ($blueprints as $bp) {
-            $id = $bp["Id"];
+
+            $id = (int) $bp["Id"];
             $name = $bp["Name"];
             $cost = $bp["Cost"];
             $speed = $bp["Speed"];
@@ -245,7 +253,8 @@ function get_num_dead_units($conn, $gameid)
                 speed: <?= $speed ?>,
                 secondsToBuild: <?= $buildTime ?>,
             },
-        <?php } ?>
+        <?php
+        } ?>
     }
 
     let buildQueue = [
@@ -256,6 +265,22 @@ function get_num_dead_units($conn, $gameid)
             },
         <?php } ?>
     ];
+
+    <?php
+    $living_units = get_living_units($conn, $gameid);
+    $living_unit_data = [];
+
+    foreach ($living_units as $unit) {
+        $living_unit_data[] = [
+            "id" => $unit["Id"],
+            "name" => $unit["Name"],
+            "currPosition" => ["x" => 0, "y" => 0],
+            "movingTo" => null,
+        ];
+    }
+    ?>
+
+    let livingUnits = {};
 
     function renderUnitInQueue(unit) {
         return `<div class="flex flex-row gap-2 justify-evenly px-2">
@@ -269,10 +294,8 @@ function get_num_dead_units($conn, $gameid)
         queueButton.innerText = `Queue (${buildQueue.length})`
         for (let unit of buildQueue) {
             queuePanel.innerHTML += renderUnitInQueue(unitBlueprints[unit.blueprintId])
-
         }
     }
-
 
     function showTab(event, tab) {
         if (event.target.classList.contains("current"))
@@ -283,6 +306,44 @@ function get_num_dead_units($conn, $gameid)
 
         document.querySelector(".current-tab").classList.remove("current-tab")
         document.getElementById(tab).classList.add("current-tab")
+    }
+
+    function spawnUnit(unit) {
+        if (livingUnits[unit.id] != null) return;
+
+        livingUnits[unit.id] = unit;
+
+        let unitIcon = document.createElement("img")
+        unitIcon.classList.add("rounded-full")
+        unitIcon.classList.add("border")
+        unitIcon.classList.add("px-2")
+        unitIcon.classList.add("py-2")
+        unitIcon.classList.add("border-transparent")
+        unitIcon.classList.add("border-dashed")
+        unitIcon.classList.add("hover:border-gray-300")
+        unitIcon.classList.add("[&.selected-unit]:border-solid")
+        unitIcon.classList.add("[&.selected-unit]:border-white")
+        unitIcon.classList.add("[&.selected-unit]:bg-orange-600/75")
+
+        unitIcon.src = `/${unit.name}-icon.svg`;
+        unitIcon.style.position = "absolute";
+        unitIcon.style.top = "50%";
+        unitIcon.style.left = "50%";
+        unitIcon.style.width = "7%";
+        unitIcon.style.height = "7%";
+        unitIcon.style.transform = "translate(-50%, -50%)";
+        unitIcon.addEventListener("click", (event) => {
+            unitIcon.classList.toggle("selected-unit")
+        })
+
+        console.log(unitIcon);
+
+        document.getElementById("map").appendChild(unitIcon)
+    }
+    let initialUnitsToSpawn = <?= json_encode($living_unit_data) ?>;
+    for (let unit of initialUnitsToSpawn) {
+        console.log("Spawning", unit)
+        spawnUnit(unit)
     }
 
     function tick() {
@@ -304,6 +365,17 @@ function get_num_dead_units($conn, $gameid)
             if (diffMs >= totalTimeMs) {
                 queuePanel.removeChild(queuePanel.children[0])
                 buildQueue.splice(0, 1);
+
+                let bp = unitBlueprints[currentlyBuildingUnit.blueprintId]
+                spawnUnit({
+                    id: "unit-" + Math.random().toString(16).slice(2),
+                    name: bp.name,
+                    currPosition: {
+                        x: 0,
+                        y: 0
+                    },
+                    movingTo: null,
+                })
 
                 if (buildQueue.length > 0) {
                     queueButton.innerText = `Queue (${buildQueue.length})`
