@@ -2,6 +2,7 @@ drop table if exists GameCommands;
 drop table if exists Games;
 drop table if exists GAMES;
 drop table if exists UnitBlueprints;
+drop table if exists Units;
 drop table if exists Images;
 drop table if exists Users;
 drop table if exists USERS;
@@ -61,15 +62,36 @@ create table Games(
     references Users(Id)
 );
 
+create table Units(
+  Id integer AUTO_INCREMENT,
+  GameId integer not null,
+  BlueprintId integer not null,
+
+  DatetimeDied timestamp,
+
+  primary key (Id),
+  constraint FK_Unit_Game
+    foreign key (GameId)
+    references Games(Id),
+  constraint FK_Unit_UnitBlueprint
+    foreign key (BlueprintId)
+    references UnitBlueprints(Id)
+);
+
 create table GameCommands(
   Id integer AUTO_INCREMENT,
   GameId integer not null,
 
   CommandType enum('build_unit', 'move') not null,
-  Sector Char(2),
   UnitBlueprintId integer,
 
+  Sector Char(2),
+  UnitId int,
+  UnitStartXPos float,
+  UnitStartYPos float,
+
   DatetimeIssued timestamp not null default current_timestamp,
+  DatetimeEnd timestamp not null,
 
   primary key (Id),
   constraint FK_GameCommand_Game
@@ -77,5 +99,9 @@ create table GameCommands(
     references Games(Id),
   constraint FK_GameCommand_UnitBlueprint
     foreign key (UnitBlueprintId)
-    references UnitBlueprints(Id)
+    references UnitBlueprints(Id),
+  constraint FK_GameCommand_Unit
+    foreign key (UnitId)
+    references Units(Id)
+
 );

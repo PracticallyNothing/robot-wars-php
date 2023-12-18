@@ -45,3 +45,36 @@ function game_only_endpoint() {
 
     exit(-1);
 }
+
+function exec_sql(mysqli $conn, string $sql, array $params = []) {
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+}
+
+function exec_sql_scalar(mysqli $conn, string $sql, array $params = []) {
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->get_result()->fetch_column();
+}
+
+function exec_sql_first(mysqli $conn, string $sql, array $params = []) {
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->get_result()->fetch_assoc();
+}
+
+function exec_sql_all(mysqli $conn, string $sql, array $params = []) {
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+
+    $result = $stmt->get_result();
+    $rows = array();
+
+    while($row = $result->fetch_assoc()) {
+        $rows[] = $row;
+    }
+
+    return $rows;
+}
+
+define("DT_FORMAT", "Y-m-d H:i:s");
