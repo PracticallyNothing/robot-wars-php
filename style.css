@@ -1128,3 +1128,7 @@ video {
 .\[\&\.selected-unit\]\:bg-orange-600\/75.selected-unit {
   background-color: rgb(234 88 12 / 0.75);
 }
+
+.\[\&\.selected-unit\]\:bg-orange-600\/50.selected-unit {
+  background-color: rgb(234 88 12 / 0.5);
+}
