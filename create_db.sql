@@ -54,7 +54,7 @@ create table Games(
   Id integer AUTO_INCREMENT,
   UserId integer not null,
   DatetimeCreated timestamp not null default current_timestamp,
-  DatetimeEnded timestamp,
+  DatetimeEnded timestamp null default null,
 
   primary key (Id),
   constraint FK_Game_User
@@ -67,7 +67,7 @@ create table Units(
   GameId integer not null,
   BlueprintId integer not null,
 
-  DatetimeDied timestamp,
+  DatetimeDied timestamp null default null,
 
   primary key (Id),
   constraint FK_Unit_Game
