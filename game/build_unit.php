@@ -12,6 +12,8 @@ $now = new DateTimeImmutable(
 );
 $now_str = $now->format(DT_FORMAT);
 
+include_once "../gameutils.php";
+
 exec_sql(
     $conn,
     "insert into Units(GameId, BlueprintId, DatetimeDied) values (?, ?, NULL)",

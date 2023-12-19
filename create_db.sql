@@ -1,8 +1,8 @@
 drop table if exists GameCommands;
+drop table if exists Units;
 drop table if exists Games;
 drop table if exists GAMES;
 drop table if exists UnitBlueprints;
-drop table if exists Units;
 drop table if exists Images;
 drop table if exists Users;
 drop table if exists USERS;
@@ -36,7 +36,7 @@ create table UnitBlueprints(
   IconId int,
 
   Cost integer,
-  SecondsToBuild float,
+  SecondsToBuild integer,
   Speed float,
 
   primary key (Id),
@@ -44,11 +44,11 @@ create table UnitBlueprints(
 );
 
 insert into UnitBlueprints(Name, Caption, Cost, SecondsToBuild, Speed) values
-('miner',        'Miner',          100,  5.0, 3.0),
-('support',      'Support Truck',  150, 10.0, 5.0),
-('flamethrower', 'Firethrower',    500, 10.0, 5.0),
-('machineguns',  'Machinegunners', 300,  8.5, 7.0),
-('artillery',    'Artillery',      800, 20.0, 1.0);
+('miner',        'Miner',          100,  7, 3.0),
+('support',      'Support Truck',  150, 14, 5.0),
+('flamethrower', 'Firethrower',    500, 18, 5.0),
+('machineguns',  'Machinegunners', 300, 15, 7.0),
+('artillery',    'Artillery',      800, 30, 1.0);
 
 create table Games(
   Id integer AUTO_INCREMENT,
