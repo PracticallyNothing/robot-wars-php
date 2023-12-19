@@ -79,7 +79,7 @@ function get_num_dead_units($conn, $gameid) {
             </button>
         </div>
         <hr class="mb-2 border-teal-500" />
-        <div id="unit-panel" class="current-tab h-full hidden [&.current-tab]:block">
+        <div id="unit-panel" class="current-tab overflow-y-auto h-full hidden [&.current-tab]:block">
             <?php
             $result = $conn->query("select * from UnitBlueprints");
 

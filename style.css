@@ -644,12 +644,8 @@ video {
   width: 14ch;
 }
 
-.w-\[40ch\] {
-  width: 40ch;
-}
-
-.w-\[42\.5\%\] {
-  width: 42.5%;
+.w-\[45\%\] {
+  width: 45%;
 }
 
 .w-\[6ch\] {
@@ -671,18 +667,6 @@ video {
 
 .w-screen {
   width: 100vw;
-}
-
-.w-\[40\%\] {
-  width: 40%;
-}
-
-.w-\[50\%\] {
-  width: 50%;
-}
-
-.w-\[45\%\] {
-  width: 45%;
 }
 
 .flex-grow {
@@ -753,6 +737,10 @@ video {
 
 .overflow-hidden {
   overflow: hidden;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
 }
 
 .whitespace-nowrap {
@@ -987,11 +975,6 @@ video {
   transition-duration: 150ms;
 }
 
-.hover\:border-white:hover {
-  --tw-border-opacity: 1;
-  border-color: rgb(255 255 255 / var(--tw-border-opacity));
-}
-
 .hover\:border-gray-300:hover {
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity));
@@ -1069,10 +1052,6 @@ video {
   border-color: rgb(194 65 12 / var(--tw-border-opacity));
 }
 
-.\[\&\.selected-unit\]\:border-2.selected-unit {
-  border-width: 2px;
-}
-
 .\[\&\.selected-unit\]\:border-solid.selected-unit {
   border-style: solid;
 }
@@ -1080,53 +1059,6 @@ video {
 .\[\&\.selected-unit\]\:border-white.selected-unit {
   --tw-border-opacity: 1;
   border-color: rgb(255 255 255 / var(--tw-border-opacity));
-}
-
-.\[\&\.selected-unit\]\:bg-white.selected-unit {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-}
-
-.\[\&\.selected-unit\]\:bg-\[\#40404035\].selected-unit {
-  background-color: #40404035;
-}
-
-.\[\&\.selected-unit\]\:bg-\[\#80476635\].selected-unit {
-  background-color: #80476635;
-}
-
-.\[\&\.selected-unit\]\:bg-rose-800.selected-unit {
-  --tw-bg-opacity: 1;
-  background-color: rgb(159 18 57 / var(--tw-bg-opacity));
-}
-
-.\[\&\.selected-unit\]\:bg-green-700.selected-unit {
-  --tw-bg-opacity: 1;
-  background-color: rgb(21 128 61 / var(--tw-bg-opacity));
-}
-
-.\[\&\.selected-unit\]\:bg-green-700\/50.selected-unit {
-  background-color: rgb(21 128 61 / 0.5);
-}
-
-.\[\&\.selected-unit\]\:bg-green-300\/50.selected-unit {
-  background-color: rgb(134 239 172 / 0.5);
-}
-
-.\[\&\.selected-unit\]\:bg-green-900\/75.selected-unit {
-  background-color: rgb(20 83 45 / 0.75);
-}
-
-.\[\&\.selected-unit\]\:bg-green-900\/90.selected-unit {
-  background-color: rgb(20 83 45 / 0.9);
-}
-
-.\[\&\.selected-unit\]\:bg-rose-800\/90.selected-unit {
-  background-color: rgb(159 18 57 / 0.9);
-}
-
-.\[\&\.selected-unit\]\:bg-orange-600\/75.selected-unit {
-  background-color: rgb(234 88 12 / 0.75);
 }
 
 .\[\&\.selected-unit\]\:bg-orange-600\/50.selected-unit {
