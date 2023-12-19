@@ -23,7 +23,7 @@ $now_str = $now->format(DT_FORMAT);
 $unit_speed = fetch_unit_speed($conn, $unitId);
 $curr_pos = calc_unit_curr_position($conn, $unitId, $gameid, $now);
 $target = sector_to_xy($sector);
-$seconds = (vec2_len($target) * MAP_SCALE) / $unit_speed;
+$seconds = (vec2_len(vec2_sub($target, $curr_pos)) * MAP_SCALE) / $unit_speed;
 $end_time = $now->add(new DateInterval("PT" . round($seconds) . "S"));
 
 exec_sql(
