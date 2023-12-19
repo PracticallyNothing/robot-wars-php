@@ -319,6 +319,12 @@ function get_num_dead_units($conn, $gameid) {
     let selectedUnitId = null
     let selectedUnitImg = null
 
+    function clearSelectedUnit() {
+        selectedUnitImg.classList.remove("selected-unit");
+        selectedUnitId = null;
+        selectedUnitImg = null;
+    }
+
     function spawnUnit(unit) {
         if (livingUnits[unit.id] != null) return;
 
@@ -606,6 +612,13 @@ function get_num_dead_units($conn, $gameid) {
         return `${sectorLetter}${sectorNumber}`
     }
 
+    map.addEventListener("mouseup", (e) => {
+        e.preventDefault();
+        if (selectedUnitId != null) {
+            clearSelectedUnit();
+        }
+    });
+
     map.addEventListener("contextmenu", (e) => {
         e.preventDefault();
         if (selectedUnitId == null) {
@@ -672,7 +685,9 @@ function get_num_dead_units($conn, $gameid) {
         // document.getElementById("angle").innerText = radToDeg(angle).toFixed(2)
         // document.getElementById("min-max-angle").innerText = `${radToDeg(minAngle).toFixed(2)} / ${radToDeg(maxAngle).toFixed(2)}`
 
-        ctx.strokeStyle = "rgba(200, 200, 200, 0.4)";
+        ctx.strokeStyle = "rgba(160, 200, 200, 0.4)";
+        ctx.lineWidth = 3;
+
         let now = new Date();
 
         for (let unitId in livingUnits) {
@@ -718,17 +733,16 @@ function get_num_dead_units($conn, $gameid) {
 
             ctx.lineWidth = 5;
             // ctx.strokeStyle = "rgb(200, 200, 200)";
-            if (mouseDown)
+            if (selectedUnitId) {
                 ctx.fillStyle = "rgba(0, 100, 200, 0.8)";
-            else
-                ctx.fillStyle = "rgba(150, 150, 255, 0.5)";
-            ctx.moveTo(arcX, arcY)
-            ctx.beginPath()
-            ctx.arc(arcX, arcY, minRadius, minAngle, maxAngle)
-            ctx.arc(arcX, arcY, maxRadius, maxAngle, minAngle, true)
-            ctx.closePath();
-            // ctx.stroke();
-            ctx.fill();
+                ctx.moveTo(arcX, arcY)
+                ctx.beginPath()
+                ctx.arc(arcX, arcY, minRadius, minAngle, maxAngle)
+                ctx.arc(arcX, arcY, maxRadius, maxAngle, minAngle, true)
+                ctx.closePath();
+                // ctx.stroke();
+                ctx.fill();
+            }
         }
 
         window.requestAnimationFrame(draw);
