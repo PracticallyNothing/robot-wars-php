@@ -8,6 +8,8 @@ $game_info = exec_sql_first($conn, "select * from Games where Id = ?", [
     $gameid,
 ]);
 
+include_once "gameutils.php";
+
 $units_in_queue = exec_sql_all(
     $conn,
     "select * from GameCommands" .
@@ -17,24 +19,25 @@ $units_in_queue = exec_sql_all(
         " order by DatetimeEnd asc",
     [$gameid],
 );
+$all_last_moves = fetch_all_last_move_commands($conn, $gameid);
 
-function get_living_units($conn, $gameid)
-{
-    return exec_sql_all(
+function get_living_units($conn, $gameid) {
+    $living_units = exec_sql_all(
         $conn,
-        "select *" .
-            " from   Units U" .
-            "   join UnitBlueprints UB on U.BlueprintId = UB.Id" .
-            "   join GameCommands GC on U.Id = GC.UnitId and CommandType = 'build_unit'" .
-            " where U.DatetimeDied is NULL" .
-            "   and U.GameId = ?" .
-            "   and GC.DatetimeEnd <= current_timestamp",
+        "select *
+         from   Units U
+           join UnitBlueprints UB on U.BlueprintId = UB.Id
+           join GameCommands BuildGC on U.Id = BuildGC.UnitId and BuildGC.CommandType = 'build_unit'
+         where U.DatetimeDied is NULL
+           and U.GameId = ?
+           and BuildGC.DatetimeEnd <= current_timestamp",
         [$gameid],
     );
+
+    return $living_units;
 }
 
-function get_num_dead_units($conn, $gameid)
-{
+function get_num_dead_units($conn, $gameid) {
     return exec_sql_scalar(
         $conn,
         "select Count(*) from Units where current_timestamp > DatetimeDied and GameId = ?",
@@ -100,7 +103,7 @@ function get_num_dead_units($conn, $gameid)
                 $caption = (string) $blueprint["Caption"];
                 $cost = (float) $blueprint["Cost"];
                 $secondsToBuild = (float) $blueprint["SecondsToBuild"];
-            ?>
+                ?>
                 <button id="build-<?= $id ?>" onclick="buildUnit(<?= $id ?>)" class="flex flex-row items-center w-full hover:bg-slate-600 active:bg-slate-700 px-2 py-2">
                     <div class="w-20 h-20 flex justify-center items-center">
                         <img class="m-auto" src="/<?= $name ?>-icon.svg" />
@@ -115,7 +118,7 @@ function get_num_dead_units($conn, $gameid)
                         <p class="text-right">
                             <?= number_format(
                                 $secondsToBuild,
-                                2,
+                                0,
                                 ".",
                                 "",
                             ) ?> sec. </p>
@@ -131,7 +134,9 @@ function get_num_dead_units($conn, $gameid)
             <div class="grid grid-cols-2 gap-y-4">
                 <div>
                     <p>You've lasted for:</p>
-                    <h2 id="score-lasted-for-time" class="text-2xl" data-dt-game-started="<?= $game_info["DatetimeCreated"] ?>">
+                    <h2 id="score-lasted-for-time" class="text-2xl" data-dt-game-started="<?= $game_info[
+                        "DatetimeCreated"
+                    ] ?>">
                         <?php
                         $now = new DateTimeImmutable();
                         $now = $now->add(new DateInterval("PT1H"));
@@ -155,9 +160,9 @@ function get_num_dead_units($conn, $gameid)
                 <div>
                     <p>You've lost:</p>
                     <h2 id="score-units-lost" class="text-2xl"><?= get_num_dead_units(
-                                                                    $conn,
-                                                                    $gameid,
-                                                                ) ?> units</h2>
+                        $conn,
+                        $gameid,
+                    ) ?> units</h2>
                 </div>
             </div>
             <button class="border border-red-400 py-4 bg-red-800 hover:bg-red-700 active:bg-red-600 font-bold my-2" hx-post="/game/end-game.php" hx-confirm="Are you sure you want to end the game?">End game</button>
@@ -165,8 +170,7 @@ function get_num_dead_units($conn, $gameid)
     </div>
 
     <?php
-    function draw_line(float $rotation)
-    {
+    function draw_line(float $rotation) {
         return '<div style="transform: rotate(' .
             $rotation .
             'deg)"' .
@@ -181,8 +185,7 @@ function get_num_dead_units($conn, $gameid)
             "</div>";
     }
 
-    function draw_circle(float $percent)
-    {
+    function draw_circle(float $percent) {
         return "<div data-radius=\"$percent\" style=\"width: $percent%; height: $percent%\"" .
             " class=\"game-circle m-auto absolute z-10 inset-0 border-2 border-green-300 rounded-full pointer-events-none\">" .
             "</div>";
@@ -237,12 +240,13 @@ function get_num_dead_units($conn, $gameid)
 
     let unitBlueprints = {
         <?php foreach ($blueprints as $bp) {
+
             $id = (int) $bp["Id"];
             $name = $bp["Name"];
             $cost = $bp["Cost"];
             $speed = $bp["Speed"];
             $buildTime = $bp["SecondsToBuild"];
-        ?>
+            ?>
             <?= $id ?>: {
                 name: "<?= $name ?>",
                 cost: <?= $cost ?>,
@@ -255,7 +259,7 @@ function get_num_dead_units($conn, $gameid)
 
     let buildQueue = [
         <?php foreach ($units_in_queue as $unit) { ?> {
-                unitId: <?= (int)$unit["UnitId"] ?>,
+                unitId: <?= (int) $unit["UnitId"] ?>,
                 blueprintId: <?= $unit["UnitBlueprintId"] ?>,
                 startTime: new Date("<?= $unit["DatetimeIssued"] ?>"),
                 endTime: new Date("<?= $unit["DatetimeEnd"] ?>")
@@ -284,14 +288,16 @@ function get_num_dead_units($conn, $gameid)
     $living_unit_data = [];
 
     foreach ($living_units as $unit) {
+        $last_move = $all_last_moves[$unit["UnitId"]];
+
         $living_unit_data[] = [
             "id" => $unit["UnitId"],
             "name" => $unit["Name"],
             "currPosition" => ["x" => 0, "y" => 0],
-            "moveFrom" => null,
-            "moveTo" => null,
-            "moveStartTime" => null,
-            "moveEndTime" => null,
+            "moveFrom" => $last_move["moveFrom"],
+            "moveTo" => $last_move["moveTo"],
+            "moveStartTime" => $last_move["moveStartTime"]->format(DT_FORMAT),
+            "moveEndTime" => $last_move["moveEndTime"]->format(DT_FORMAT),
         ];
     }
     ?>
@@ -321,9 +327,9 @@ function get_num_dead_units($conn, $gameid)
         let unitIcon = document.createElement("img")
         unitIcon.classList.add("rounded-full")
         unitIcon.classList.add("border")
-        unitIcon.classList.add("px-2")
+        unitIcon.classList.add("px-1")
+        unitIcon.classList.add("py-1")
         unitIcon.classList.add("z-20")
-        unitIcon.classList.add("py-2")
         unitIcon.classList.add("border-transparent")
         unitIcon.classList.add("border-dashed")
         unitIcon.classList.add("hover:border-gray-300")
@@ -352,6 +358,36 @@ function get_num_dead_units($conn, $gameid)
                 unitIcon.classList.add("selected-unit")
             }
         })
+
+        if(unit.moveTo != null) {
+            console.log("Placing", unit.id);
+
+            unit.moveStartTime = new Date(unit.moveStartTime)
+            unit.moveEndTime = new Date(unit.moveEndTime)
+
+            let totalTime = unit.moveEndTime - unit.moveStartTime;
+            let currProgress = new Date() - unit.moveStartTime;
+            let progressFraction = currProgress / totalTime;
+
+            if(progressFraction > 1) {
+                progressFraction = 1
+            }
+
+            let startX = unit.moveFrom.x;
+            let startY = unit.moveFrom.y;
+
+            let endX = unit.moveTo.x;
+            let endY = unit.moveTo.y;
+
+            let diffX = endX - startX;
+            let diffY = endY - startY;
+
+            let currX = unit.moveFrom.x + diffX * progressFraction;
+            let currY = unit.moveFrom.y + diffY * progressFraction;
+
+            unitIcon.style.left = ((currX+1) * 50) + "%";
+            unitIcon.style.top = ((currY+1) * 50) + "%";
+        }
 
         livingUnitIcons[unit.id] = unitIcon;
 
@@ -412,6 +448,7 @@ function get_num_dead_units($conn, $gameid)
             if (unit.moveTo == null || unit.moveEndTime <= now) {
                 continue;
             }
+
 
             let totalTime = unit.moveEndTime - unit.moveStartTime;
             let currProgress = new Date() - unit.moveStartTime;
@@ -648,6 +685,7 @@ function get_num_dead_units($conn, $gameid)
             let totalTime = unit.moveEndTime - unit.moveStartTime;
             let currProgress = new Date() - unit.moveStartTime;
             let progressFraction = currProgress / totalTime;
+
 
             let startX = (unit.moveFrom.x + 1) * canvas.width / 2;
             let startY = (unit.moveFrom.y + 1) * canvas.height / 2;
