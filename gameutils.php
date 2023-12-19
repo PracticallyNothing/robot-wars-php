@@ -4,6 +4,11 @@ define("NUM_SECTORS", 8);
 define("MAX_SECTOR", ord("A") + NUM_SECTORS);
 define("NUM_RADIUSES", 9);
 
+define("STARTING_MINERALS", 800);
+
+define("MINER_MIN_IDLE_SECONDS", 5);
+define("MINER_MINERALS_PER_SECOND", 3);
+
 define("MAP_SCALE", 100);
 
 function vec2_len($vec)
@@ -166,4 +171,92 @@ function fetch_all_last_move_commands($conn, $gameid): array {
     }
 
     return $cmds;
+}
+
+function calculate_current_minerals(mysqli $conn, int $gameid, DateTimeImmutable $now, bool $subtract_build_costs = true) {
+    $all_miner_move_commands = exec_sql_all(
+        $conn,
+        "select U.Id, GC.Sector, GC.DatetimeIssued, GC.DatetimeEnd
+         from   GameCommands GC
+           join Units U on U.Id = GC.UnitId
+           join UnitBlueprints UB on UB.Id = U.BlueprintId
+         where GC.CommandType = 'move'
+           and GC.GameId = ?
+           and UB.name = 'miner'
+         order by GC.UnitId, GC.DatetimeIssued asc",
+        [$gameid]
+    );
+
+    // Group move commands by unitId
+    $commandsByUnitId = [];
+    foreach($all_miner_move_commands as $cmd) {
+        $unitId = (int)$cmd["Id"];
+        $sector = (string)$cmd["Sector"];
+        $startTime = new DateTimeImmutable($cmd["DatetimeIssued"]);
+        $endTime = new DateTimeImmutable($cmd["DatetimeEnd"]);
+
+        if(!isset($commandsByUnitId[$unitId])) {
+            $commandsByUnitId[$unitId] = [];
+        }
+
+        $commandsByUnitId[$unitId][] = [
+            "startTime" => $startTime,
+            "endTime" => $endTime,
+            "sector" => $sector,
+        ];
+    }
+
+    $sum = 0;
+
+    // Figure out how much each miner has mined by looking at the time they've been idle for.
+    foreach($commandsByUnitId as $unitId => $cmds) {
+        $prevEndTime = null;
+        $prevSector = null;
+
+        foreach($cmds as $cmd) {
+            $startTime = $cmd["startTime"];
+            $endTime = $cmd["endTime"];
+            $sector = $cmd["sector"];
+
+
+            if($prevEndTime == null) {
+                $prevEndTime = $endTime;
+                $prevSector = $sector;
+                continue;
+            }
+
+            $idle_secs = $startTime->getTimestamp() - $prevEndTime->getTimestamp();
+            if($idle_secs >= MINER_MIN_IDLE_SECONDS) {
+                $totalMined = (MINER_MINERALS_PER_SECOND * (int)$prevSector[1]) * ($idle_secs - MINER_MIN_IDLE_SECONDS);
+                $sum += $totalMined;
+            }
+
+            $prevEndTime = $endTime;
+            $prevSector = $sector;
+        }
+
+        $final_cmd = $cmds[count($cmds) - 1];
+        $final_sector = $final_cmd["sector"];
+        $now_idle_secs = $now->getTimestamp() - $final_cmd["endTime"]->getTimestamp() + 3600;
+
+        if($now_idle_secs >= MINER_MIN_IDLE_SECONDS) {
+            $sum += (MINER_MINERALS_PER_SECOND * (int)$final_sector[1]) * ($now_idle_secs - MINER_MIN_IDLE_SECONDS);
+        }
+    }
+
+    if(!$subtract_build_costs) {return $sum;}
+
+    // Subtract the cost of all 'build_unit' commands for this game:
+    $totalBuildCosts = exec_sql_scalar(
+        $conn,
+        "select sum(UB.Cost)
+         from   GameCommands GC
+           join Units U on U.Id = GC.UnitId
+           join UnitBlueprints UB on UB.Id = U.BlueprintId
+         where GC.CommandType = 'build_unit'
+           and GC.GameId = ?",
+        [$gameid]
+    );
+
+    return STARTING_MINERALS + $sum - $totalBuildCosts;
 }

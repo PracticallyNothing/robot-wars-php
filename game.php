@@ -151,7 +151,12 @@ function get_num_dead_units($conn, $gameid) {
                 </div>
                 <div>
                     <p>You've mined:</p>
-                    <h2 id="score-minerals-mined" class="text-2xl"> 123456 minerals</h2>
+                    <h2 id="score-minerals-mined" class="text-2xl"><?= calculate_current_minerals(
+                        $conn,
+                        $gameid,
+                        new DateTimeImmutable(),
+                        false,
+                    ) ?> minerals</h2>
                 </div>
                 <div>
                     <p>You've killed:</p>
