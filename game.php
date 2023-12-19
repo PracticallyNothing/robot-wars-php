@@ -289,6 +289,13 @@ function get_num_dead_units($conn, $gameid) {
 
     foreach ($living_units as $unit) {
         $last_move = $all_last_moves[$unit["UnitId"]];
+        if ($last_move == null) {
+            $living_unit_data[] = [
+                "id" => $unit["UnitId"],
+                "name" => $unit["Name"],
+            ];
+            continue;
+        }
 
         $living_unit_data[] = [
             "id" => $unit["UnitId"],
