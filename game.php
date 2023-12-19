@@ -116,12 +116,8 @@ function get_num_dead_units($conn, $gameid) {
 
                     <div class="h-full flex flex-col justify-center items-center">
                         <p class="text-right">
-                            <?= number_format(
-                                $secondsToBuild,
-                                0,
-                                ".",
-                                "",
-                            ) ?> sec. </p>
+                            <?= $secondsToBuild ?> sec.
+                        </p>
                     </div>
                 </button>
             <?php
