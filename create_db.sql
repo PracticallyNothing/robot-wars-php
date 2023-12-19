@@ -1,11 +1,9 @@
 drop table if exists GameCommands;
 drop table if exists Units;
 drop table if exists Games;
-drop table if exists GAMES;
 drop table if exists UnitBlueprints;
 drop table if exists Images;
 drop table if exists Users;
-drop table if exists USERS;
 
 create table Users (
   Id integer AUTO_INCREMENT,
