@@ -64,11 +64,6 @@ function get_num_dead_units($conn, $gameid) {
 </head>
 
 <body class="h-screen w-screen flex justify-center items-center overflow-hidden bg-gray-800 text-white">
-    <!-- <pre class="w-[40ch]">
-             Mouse Position: <span id="mouse-pos"></span>
-             Angle: <span id="angle"></span>
-             Min/Max Angle: <span id="min-max-angle"></span>
-             </pre> -->
     <div id="side-panel" class="w-96 h-full border-r border-teal-600 bg-gray-900">
         <div id="side-panel-tabs" class="flex flex-row justify-evenly items-center">
             <button class="current flex-grow basis-full px-2 py-2 [&.current]:bg-emerald-600 hover:bg-blue-600 active:bg-blue-700" onclick="showTab(event, 'unit-panel')">
@@ -622,7 +617,7 @@ function get_num_dead_units($conn, $gameid) {
 
     map.addEventListener("mouseup", (e) => {
         e.preventDefault();
-        if (selectedUnitId != null) {
+        if (e.button == 0 && selectedUnitId != null) {
             clearSelectedUnit();
         }
     });
